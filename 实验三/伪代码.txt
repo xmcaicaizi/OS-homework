@@ -1,0 +1,55 @@
+//理发师问题
+
+初始化
+
+#define chair 10;		/*缓冲区（椅子数量）*/
+
+int waiting;			/*等待区顾客数量*/
+
+sem_t baber;			/*理发师信号量(是否理发)*/
+sem_t customer;			/*顾客信号量(有无顾客)*/
+sem_t mutex;			/*临界区(只能有一个线程同时改变资源数目)*/
+
+
+//理发师函数
+void baber(void)
+{
+    white (true) do
+    {
+        down(customer);							/*如无顾客,理发师睡觉(等待)*/
+        down(mutex);							/*顾客进入临界区*/
+
+        waiting = waiting − 1;					/*等候顾客数少一个*/
+		
+		up(baber)								/*唤醒理发师*/
+		up(mutex)								/*释放临界区*/
+
+		cut_hair();            					
+		/*开始理发*/
+	}  
+}
+
+//顾客函数
+void customer(void)
+{
+	white (true) do
+	{
+		down(mutex);							/*顾客进入临界区*/
+		if(waiting < chair)						/*有空椅子*/
+		{
+			waiting++;
+			up(customer);						/*顾客资源加1*/
+			up(mutex);							/*释放临界区*/
+
+			down(baber);						/*等待理发师理发*/
+			get_cut();							/*理发*/
+		}
+
+		else{
+			up(mutex);							/*释放临界区*/
+			/*
+				没有椅子顾客离开
+			*/
+		}
+	}  
+}
